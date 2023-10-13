@@ -1,0 +1,123 @@
+---
+title: "hw-01"
+author: "Finn McLachlan (S2544766)"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}    
+knitr::opts_chunk$set(out.width = "100%")
+```
+
+
+------------------------------------------------------------------------------
+
+### Load packages and data
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(lubridate)
+
+edibnb <- read_csv("data/edibnb.csv")
+council <- read_csv("data/council_assessments.csv")
+```
+
+------------------------------------------------------------------------------
+
+
+## EXERCISE 1
+
+```{r hw1-ex1}
+
+na_check <- sapply(edibnb, function(col) any(is.na(col)))
+
+
+print(na_check)
+
+perfectreviews <- edibnb[edibnb$review_scores_rating == 100,]
+highestreviews <- perfectreviews[which.max(perfectreviews$number_of_reviews),]
+print(highestreviews)
+```
+
+
+#price, neighbourhood, bathrooms, bedrooms, beds and review scores rating all have NAs
+#860170 is the ID of the property with a perfect score and highest number of reviews
+
+------------------------------------------------------------------------------
+
+## EXERCISE 
+
+```{r hw1-ex2}
+ Oldtown100 <- filter(edibnb, neighbourhood == 'Old Town' & price > 100)
+
+count(Oldtown100)
+
+
+Southside4 <- filter(edibnb, neighbourhood == 'Southside' & accommodates >= 4)
+
+min(Southside4$price)
+
+max(Southside4$price)
+
+mean(Southside4$price)
+```
+# 494 properties in Old Town with a stay price greater than 100. Minimum is 10, max is 800 and average is 153.14
+
+
+
+------------------------------------------------------------------------------
+
+## EXERCISE 3
+
+```{r hw1-ex3}
+Newington <- edibnb %>%
+  filter(neighbourhood == 'Newington') %>%
+  
+select(bathrooms, bedrooms)
+
+table(Newington)
+
+NewingtonRnd <- Newington %>%
+  mutate(RoundedBathrooms = ceiling(Newington$bathrooms))
+ 
+
+NewingtonRnd %>%
+  filter(RoundedBathrooms > bedrooms)%>%
+  nrow()
+
+
+
+```
+
+
+#43  Listings have more bathrooms than bedrooms
+
+
+
+------------------------------------------------------------------------------
+
+## EXERCISE 4
+
+```{r hw1-ex4}
+DateForm <- council %>% mutate(assessment_date = dmy(assessment_date)) 
+
+DateForm
+
+May <- DateForm %>% filter(month(ymd(assessment_date)) == 5) 
+count(May)
+
+
+GraphNeighbourhood <- edibnb %>%
+  right_join(council, by = "id") %>%
+  ggplot() + geom_bar(mapping = aes(x = neighbourhood)) + coord_flip() 
+
+GraphNeighbourhood
+
+
+```
+
+#296 properties were assessed in May
+#Leith has been targeted much mre than other neighbourhoods
+
+
+------------------------------------------------------------------------------
